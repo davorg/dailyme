@@ -1,0 +1,195 @@
+:root {
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --primary: #2c7a7b;
+  --accent: #68d391;
+  --danger: #e53e3e;
+  --text: #333;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181a1b;
+    --card: #242526;
+    --text: #f1f1f1;
+    --shadow: rgba(0, 0, 0, 0.4);
+  }
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 5em;
+}
+
+header {
+  text-align: center;
+  padding: 1em;
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+#task-list {
+  max-width: 600px;
+  margin: auto;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.task {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1em;
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: transform 0.2s ease, background 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task.done {
+  background: var(--accent);
+  color: black;
+}
+
+.task-name {
+  font-size: 1.1em;
+  flex-grow: 1;
+}
+
+.streak {
+  font-size: 0.9em;
+  margin-left: 0.5em;
+}
+
+.progress-bar {
+  text-align: center;
+  font-size: 1em;
+  margin: 1em 0;
+}
+
+.fab {
+  position: fixed;
+  bottom: 1em;
+  right: 1em;
+  width: 60px;
+  height: 60px;
+  background: var(--primary);
+  color: white;
+  font-size: 2em;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px var(--shadow);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.fab:hover {
+  background: #319795;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+dialog {
+  position: relative;
+  border: none;
+  border-radius: 12px;
+  padding: 1.5em;
+  width: 90%;
+  max-width: 400px;
+  background: var(--card);
+  box-shadow: 0 8px 16px var(--shadow);
+  font-size: 1em;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+}
+
+.dialog-buttons button {
+  flex: 1;
+}
+
+
+#add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+#add-form input {
+  font-size: 1em;
+  padding: 0.75em;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#add-form button {
+  font-size: 1em;
+  padding: 0.75em;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#add-form button:hover {
+  background: #319795;
+}
+
+#close-dialog {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* Shake animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
+/* Toast styles */
+#toast {
+  position: fixed;
+  bottom: 2em;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 0.8em 1.2em;
+  border-radius: 8px;
+  font-size: 0.95em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
