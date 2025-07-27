@@ -146,6 +146,11 @@ function showToast(message) {
   }, 2000);
 }
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").then(() => {
+    console.log("Service Worker registered");
+  });
+}
 
 render();
 
