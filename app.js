@@ -64,8 +64,8 @@ function render() {
     const streakCount = calculateStreak(task.done_dates);
     const streak = document.createElement("span");
     streak.className = "streak";
-    streak.textContent = `🔗 ${streakCount} day${streakCount !== 1 ? "s" : ""}`;
-    if (streakCount >= 7) streak.textContent += " 🔥";
+    streak.innerHTML = `<span class="chain-icon"><i class="fa-solid fa-link"></i></span> ${streakCount} day${streakCount !== 1 ? "s" : ""}`;
+    if (streakCount >= 7) streak.innerHTML += ' 🔥';
 
     div.appendChild(name);
     div.appendChild(streak);

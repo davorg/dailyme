@@ -193,3 +193,11 @@ dialog {
   opacity: 1;
 }
 
+.chain-icon {
+  color: #444; /* default chain colour */
+  transition: color 0.2s ease;
+}
+
+.task.done .chain-icon {
+  color: white; /* or black, or #ffd700 etc */
+}
