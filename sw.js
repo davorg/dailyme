@@ -1,10 +1,11 @@
 
-const CACHE_NAME = "dailyme-v1";
+const CACHE_NAME = "dailyme-v2";
 const FILES_TO_CACHE = [
   "/",
   "/index.html",
   "/style.css",
   "/app.js",
+  "/firebase.js",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png"
