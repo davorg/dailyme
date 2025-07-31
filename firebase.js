@@ -15,7 +15,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA-yDCxy2uJZ-JbEQJcEA2Y8CL9zpsi0KY",
+  apiKey: "AIzaSyC5jJGuLzO77kset0aTE1wkbHgyCsysDIY",
   authDomain: "daily-me-496ca.firebaseapp.com",
   projectId: "daily-me-496ca",
   storageBucket: "daily-me-496ca.firebasestorage.app",
