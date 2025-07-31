@@ -201,3 +201,38 @@ dialog {
 .task.done .chain-icon {
   color: white; /* or black, or #ffd700 etc */
 }
+
+/* Header adjustments */
+header {
+  position: relative;
+  text-align: center;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+
+.site-title {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+#auth-buttons {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+#auth-buttons button {
+  background-color: #2c7a7b;
+  color: white;
+  border: none;
+  padding: 0.4em 0.8em;
+  border-radius: 4px;
+  margin-left: 0.5em;
+  cursor: pointer;
+}
+
+#auth-buttons button:hover {
+  background-color: #256d6f;
+}
+

@@ -1,3 +1,13 @@
+import {
+  signIn,
+  signOutUser,
+  onUserChanged,
+  saveTasks as saveRemoteTasks,
+  loadTasks as loadRemoteTasks
+} from "./firebase.js";
+
+let currentUser = null;
+
 const storageKey = "dailyme-tasks";
 const taskList = document.getElementById("task-list");
 const progressBar = document.getElementById("progress");
@@ -6,13 +16,15 @@ const addDialog = document.getElementById("add-dialog");
 const addForm = document.getElementById("add-form");
 const nameInput = document.getElementById("task-name");
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
 
-function loadTasks() {
+function loadLocalTasks() {
   return JSON.parse(localStorage.getItem(storageKey) || "[]");
 }
 
-function saveTasks(tasks) {
+function saveLocalTasks(tasks) {
   localStorage.setItem(storageKey, JSON.stringify(tasks));
 }
 
@@ -36,7 +48,7 @@ function calculateStreak(dates) {
 }
 
 function render() {
-  const tasks = loadTasks();
+  const tasks = loadLocalTasks();
   taskList.innerHTML = "";
   let completedToday = 0;
 
@@ -53,7 +65,7 @@ function render() {
       } else {
         task.done_dates.push(today);
       }
-      saveTasks(tasks);
+      saveLocalTasks(tasks);
       render();
     };
 
@@ -85,22 +97,21 @@ addForm.onsubmit = e => {
   const name = nameInput.value.trim();
   if (!name) {
     addForm.classList.remove("shake");
-    void addForm.offsetWidth; // reflow to restart animation
+    void addForm.offsetWidth;
     addForm.classList.add("shake");
     return;
   }
 
-  const tasks = loadTasks();
+  const tasks = loadLocalTasks();
   tasks.push({ id: Date.now(), name, done_dates: [] });
-  saveTasks(tasks);
+  saveLocalTasks(tasks);
   nameInput.value = "";
   addDialog.close();
   render();
   showToast("Task added!");
 };
 
-
-addDialog.addEventListener("click", (event) => {
+addDialog.addEventListener("click", event => {
   const rect = addDialog.getBoundingClientRect();
   const isInDialog =
     event.clientX >= rect.left &&
@@ -115,14 +126,14 @@ addDialog.addEventListener("click", (event) => {
 
 let touchStartY = null;
 
-addDialog.addEventListener("touchstart", (e) => {
+addDialog.addEventListener("touchstart", e => {
   touchStartY = e.touches[0].clientY;
 });
 
-addDialog.addEventListener("touchmove", (e) => {
+addDialog.addEventListener("touchmove", e => {
   if (touchStartY === null) return;
   const touchEndY = e.touches[0].clientY;
-  if (touchEndY - touchStartY > 100) { // Swipe down threshold
+  if (touchEndY - touchStartY > 100) {
     addDialog.close();
     touchStartY = null;
   }
@@ -140,11 +151,35 @@ function showToast(message) {
   const toast = document.getElementById("toast");
   toast.textContent = message;
   toast.classList.add("show");
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
+  setTimeout(() => toast.classList.remove("show"), 2000);
 }
+
+document.getElementById("sign-in-btn").onclick = signIn;
+document.getElementById("sign-out-btn").onclick = signOutUser;
+
+onUserChanged(async user => {
+  currentUser = user;
+  document.getElementById("sign-in-btn").hidden = !!user;
+  document.getElementById("sign-out-btn").hidden = !user;
+
+  if (!user) return;
+
+  const remoteTasks = await loadRemoteTasks(user.uid);
+  const localTasks = loadLocalTasks();
+
+  if (remoteTasks.length === 0 && localTasks.length > 0) {
+    console.log("Syncing local tasks to Firestore (first-time login)");
+    await saveRemoteTasks(user.uid, localTasks);
+  } else if (remoteTasks.length > 0 && localTasks.length === 0) {
+    console.log("Populating localStorage from Firestore");
+    saveLocalTasks(remoteTasks);
+  } else if (remoteTasks.length > 0 && localTasks.length > 0) {
+    console.warn("Both local and remote tasks exist — no sync performed.");
+    showToast("  Local and remote tasks both exist. No sync performed.");
+  }
+
+  render();
+});
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").then(() => {
