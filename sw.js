@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "dailyme-v2";
+const CACHE_NAME = "dailyme-v3";
 const FILES_TO_CACHE = [
   "/",
   "/index.html",
@@ -19,11 +19,14 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  clients.claim(); // 💥 Takes control of all open tabs
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((key) => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      }))
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      )
     )
   );
 });

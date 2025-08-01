@@ -25,10 +25,13 @@ body {
 }
 
 header {
+  background: var(--bg);
+  color: var(--text);
   text-align: center;
   padding: 1em;
   font-size: 1.8em;
   font-weight: bold;
+  border-bottom: 1px solid var(--shadow);
 }
 
 #task-list {
@@ -200,15 +203,6 @@ dialog {
 
 .task.done .chain-icon {
   color: white; /* or black, or #ffd700 etc */
-}
-
-/* Header adjustments */
-header {
-  position: relative;
-  text-align: center;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-bottom: 1px solid #ddd;
 }
 
 .site-title {
