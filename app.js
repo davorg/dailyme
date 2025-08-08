@@ -1,12 +1,25 @@
 import {
-  signIn,
+  signInSmart,
   signOutUser,
   onUserChanged,
   saveTasks as saveRemoteTasks,
-  loadTasks as loadRemoteTasks
+  loadTasks as loadRemoteTasks,
+  handleRedirectResultOnce
 } from "./firebase.js";
 
 let currentUser = null;
+
+// On load, complete any pending redirect login and surface errors nicely
+handleRedirectResultOnce()
+  .then(result => {
+    if (result?.user) {
+      showToast(`Welcome ${result.user.displayName || "back"}!`);
+    }
+  })
+  .catch(err => {
+    console.error("Redirect sign-in failed:", err);
+    showToast("Sign-in failed");
+  });
 
 const storageKey = "dailyme-tasks";
 const taskList = document.getElementById("task-list");
@@ -210,7 +223,7 @@ signInBtn.onclick = async () => {
   try {
     signInBtn.disabled = true;
     signInBtn.classList.add("btn-loading");
-    await signIn();
+    await signInSmart();
   } catch (e) {
     console.error(e);
     showToast("Sign-in failed");
