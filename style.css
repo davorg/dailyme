@@ -31,7 +31,7 @@ header {
   padding: 1em;
   font-size: 1.8em;
   font-weight: bold;
-  border-bottom: 1px solid var(--shadow);
+  box-shadow: 0 1px 8px var(--shadow); /* subtle divider */
 }
 
 #task-list {
@@ -93,14 +93,9 @@ header {
   justify-content: center;
   transition: background 0.3s ease;
 }
+.fab:hover { background: #319795; }
 
-.fab:hover {
-  background: #319795;
-}
-
-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.4);
-}
+dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
 
 dialog {
   position: relative;
@@ -119,25 +114,19 @@ dialog {
   justify-content: space-between;
   gap: 1em;
 }
-
-.dialog-buttons button {
-  flex: 1;
-}
-
+.dialog-buttons button { flex: 1; }
 
 #add-form {
   display: flex;
   flex-direction: column;
   gap: 1em;
 }
-
 #add-form input {
   font-size: 1em;
   padding: 0.75em;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
-
 #add-form button {
   font-size: 1em;
   padding: 0.75em;
@@ -148,10 +137,7 @@ dialog {
   cursor: pointer;
   transition: background 0.2s ease;
 }
-
-#add-form button:hover {
-  background: #319795;
-}
+#add-form button:hover { background: #319795; }
 
 #close-dialog {
   position: absolute;
@@ -170,10 +156,7 @@ dialog {
   20%, 60% { transform: translateX(-8px); }
   40%, 80% { transform: translateX(8px); }
 }
-
-.shake {
-  animation: shake 0.4s ease;
-}
+.shake { animation: shake 0.4s ease; }
 
 /* Toast styles */
 #toast {
@@ -191,42 +174,66 @@ dialog {
   transition: opacity 0.3s ease;
   z-index: 1000;
 }
+#toast.show { opacity: 1; }
 
-#toast.show {
-  opacity: 1;
-}
+.chain-icon { color: #444; transition: color 0.2s ease; }
+.task.done .chain-icon { color: white; }
 
-.chain-icon {
-  color: #444; /* default chain colour */
-  transition: color 0.2s ease;
-}
+.site-title { font-size: 2rem; font-weight: bold; }
 
-.task.done .chain-icon {
-  color: white; /* or black, or #ffd700 etc */
-}
-
-.site-title {
-  font-size: 2rem;
-  font-weight: bold;
-}
-
-#auth-buttons {
-  position: absolute;
-  right: 1rem;
-  top: 1rem;
-}
-
+#auth-buttons { position: absolute; right: 1rem; top: 1rem; }
 #auth-buttons button {
-  background-color: #2c7a7b;
-  color: white;
-  border: none;
-  padding: 0.4em 0.8em;
-  border-radius: 4px;
-  margin-left: 0.5em;
+  background: var(--primary);
+  color: #fff;
+  border: 0;
+  padding: .45rem .8rem;
+  border-radius: .45rem;
+  font-size: .9rem;
   cursor: pointer;
+  transition: filter .15s ease;
 }
+#auth-buttons button:hover { filter: brightness(0.95); }
+#auth-buttons button[disabled] { opacity: .6; cursor: default; }
 
-#auth-buttons button:hover {
-  background-color: #256d6f;
+/* Spinner on buttons */
+.btn-loading { position: relative; pointer-events: none; }
+.btn-loading::after {
+  content: "";
+  position: absolute; right: .5rem; top: 50%; width: 14px; height: 14px;
+  margin-top: -7px; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent;
+  animation: spin .7s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Sync indicator (bottom-right toastlet) */
+.sync {
+  position: fixed; right: 12px; bottom: 12px; z-index: 50;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--shadow);
+  border-radius: 10px;
+  padding: .4rem .7rem;
+  box-shadow: 0 6px 20px var(--shadow);
+  opacity: 1; transform: translateY(0);
+  transition: opacity .25s ease, transform .25s ease;
+  font-size: .9rem;
+}
+.sync.hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
+
+/* Install banner */
+.install {
+  position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 60;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--shadow);
+  border-radius: 12px;
+  padding: .7rem .9rem;
+  box-shadow: 0 10px 30px var(--shadow);
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.install.hidden { display: none; }
+.install .actions { display: flex; gap: .5rem; }
+.btn { background: var(--primary); color: #fff; border: 0; padding: .45rem .8rem; border-radius: .45rem; }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--shadow); }
 

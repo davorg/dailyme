@@ -16,6 +16,57 @@ const addDialog = document.getElementById("add-dialog");
 const addForm = document.getElementById("add-form");
 const nameInput = document.getElementById("task-name");
 
+// Header buttons
+const signInBtn = document.getElementById("sign-in-btn");
+const signOutBtn = document.getElementById("sign-out-btn");
+
+// --- Runtime-created UI helpers (so we don’t have to edit index.html) ---
+function ensureSyncIndicator() {
+  let el = document.getElementById("sync-indicator");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "sync-indicator";
+    el.className = "sync hidden";
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function ensureInstallBanner() {
+  let el = document.getElementById("install-banner");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "install-banner";
+    el.className = "install hidden";
+    el.setAttribute("role", "dialog");
+    el.setAttribute("aria-live", "polite");
+
+    el.innerHTML = `
+      <span>Install Daily Me?</span>
+      <div class="actions">
+        <button id="install-accept" class="btn">Install</button>
+        <button id="install-dismiss" class="btn btn-ghost">Not now</button>
+      </div>
+    `;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+const syncEl = ensureSyncIndicator();
+ensureInstallBanner();
+
+function setSync(status, autoHideMs = 1200) {
+  if (!syncEl) return;
+  syncEl.textContent = status;
+  syncEl.classList.remove("hidden");
+  if (autoHideMs != null) {
+    clearTimeout(setSync._t);
+    setSync._t = setTimeout(() => syncEl.classList.add("hidden"), autoHideMs);
+  }
+}
+
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -52,7 +103,7 @@ function render() {
   taskList.innerHTML = "";
   let completedToday = 0;
 
-  tasks.forEach((task, i) => {
+  tasks.forEach((task) => {
     const done = task.done_dates.includes(todayStr());
     if (done) completedToday++;
 
@@ -65,7 +116,7 @@ function render() {
       } else {
         task.done_dates.push(today);
       }
-      saveLocalTasks(tasks);
+      saveTasks(tasks);
       render();
     };
 
@@ -104,7 +155,7 @@ addForm.onsubmit = e => {
 
   const tasks = loadLocalTasks();
   tasks.push({ id: Date.now(), name, done_dates: [] });
-  saveLocalTasks(tasks);
+  saveTasks(tasks);
   nameInput.value = "";
   addDialog.close();
   render();
@@ -154,9 +205,51 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-document.getElementById("sign-in-btn").onclick = signIn;
-document.getElementById("sign-out-btn").onclick = signOutUser;
+// --- Sign-in / out with loading feedback ---
+signInBtn.onclick = async () => {
+  try {
+    signInBtn.disabled = true;
+    signInBtn.classList.add("btn-loading");
+    await signIn();
+  } catch (e) {
+    console.error(e);
+    showToast("Sign-in failed");
+  } finally {
+    signInBtn.classList.remove("btn-loading");
+    signInBtn.disabled = false;
+  }
+};
 
+signOutBtn.onclick = async () => {
+  try {
+    await signOutUser();
+    setSync("Signed out");
+  } catch (e) {
+    console.error(e);
+    showToast("Sign-out failed");
+  }
+};
+
+// --- Save pipeline (local always; cloud debounced when signed in) ---
+let _saveDebounce;
+function saveTasks(tasks) {
+  saveLocalTasks(tasks);
+  if (!currentUser) return;
+
+  setSync("Saving…", null);
+  clearTimeout(_saveDebounce);
+  _saveDebounce = setTimeout(async () => {
+    try {
+      await saveRemoteTasks(currentUser.uid, tasks);
+      setSync("Synced ✓");
+    } catch (e) {
+      console.error(e);
+      setSync("Save failed", 2000);
+    }
+  }, 400);
+}
+
+// --- Auth state / first sync (unchanged logic, just using setSync) ---
 onUserChanged(async user => {
   currentUser = user;
   document.getElementById("sign-in-btn").hidden = !!user;
@@ -170,9 +263,11 @@ onUserChanged(async user => {
   if (remoteTasks.length === 0 && localTasks.length > 0) {
     console.log("Syncing local tasks to Firestore (first-time login)");
     await saveRemoteTasks(user.uid, localTasks);
+    setSync("Synced ✓");
   } else if (remoteTasks.length > 0 && localTasks.length === 0) {
     console.log("Populating localStorage from Firestore");
     saveLocalTasks(remoteTasks);
+    setSync("Loaded from cloud");
   } else if (remoteTasks.length > 0 && localTasks.length > 0) {
     console.warn("Both local and remote tasks exist — no sync performed.");
     showToast("  Local and remote tasks both exist. No sync performed.");
@@ -181,6 +276,34 @@ onUserChanged(async user => {
   render();
 });
 
+// --- PWA install prompt (banner created at runtime) ---
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  if (sessionStorage.getItem("install-dismissed") === "1") return;
+  e.preventDefault();
+  deferredPrompt = e;
+  const banner = document.getElementById("install-banner");
+  if (banner) banner.classList.remove("hidden");
+});
+
+document.addEventListener("click", async (e) => {
+  const t = e.target;
+  if (t && t.id === "install-accept") {
+    const banner = document.getElementById("install-banner");
+    if (banner) banner.classList.add("hidden");
+    const evt = deferredPrompt;
+    deferredPrompt = null;
+    if (evt) await evt.prompt();
+    sessionStorage.setItem("install-dismissed", "1");
+  }
+  if (t && t.id === "install-dismiss") {
+    const banner = document.getElementById("install-banner");
+    if (banner) banner.classList.add("hidden");
+    sessionStorage.setItem("install-dismissed", "1");
+  }
+});
+
+// --- SW registration (as-is) ---
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").then(() => {
     console.log("Service Worker registered");

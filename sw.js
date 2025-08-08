@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "dailyme-v3";
+const CACHE_NAME = "dailyme-v3.1";
 const FILES_TO_CACHE = [
   "/",
   "/index.html",

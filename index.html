@@ -26,6 +26,18 @@
     </div>
   </header>
 
+  <!-- Sync status -->
+  <div id="sync-indicator" class="sync hidden" aria-live="polite"></div>
+
+  <!-- Install prompt (hidden until available) -->
+  <div id="install-banner" class="install hidden" role="dialog" aria-live="polite">
+    <span>Install Daily Me?</span>
+    <div class="actions">
+      <button id="install-accept" class="btn">Install</button>
+      <button id="install-dismiss" class="btn btn-ghost">Not now</button>
+    </div>
+  </div>
+
   <div id="task-list"></div>
 
   <div class="progress-bar" id="progress"></div>
